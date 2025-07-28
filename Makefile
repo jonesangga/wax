@@ -1,9 +1,4 @@
-all: co
-
-_:
-
-
-co: _
+waxc: src/waxc.c
 	gcc src/waxc.c -o waxc -O3 -std=c99 -pedantic -Wall
 
 c: _
