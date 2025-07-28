@@ -512,300 +512,314 @@ void defs_addbool(map_t* defs, char* name_, int lino){
   map_add(defs,name,d);
 }
 
-void preprocess(const char* filename, list_t* tokens, map_t* included, map_t* defs){
+void
+preprocess(const char *filename, list_t *tokens, map_t *included, map_t *defs)
+{
+    str_t fnstr = str_from(filename, strlen(filename));
+    list_node_t *it = tokens->head;
 
-  str_t fnstr = str_from(filename,strlen(filename));
+    while (it) {
 
-  list_node_t* it = tokens->head;
-  while (it){
-    
-    tok_t* tok = (tok_t*)(it->data);
+        tok_t *tok = (tok_t *)(it->data);
 
+        int has_next  = (it->next) && (it->next->next) && (it->next->next->next);
+        int has_next2 = has_next  && (it->next->next->next->next);
+        int has_prev  = (it->prev) && (it->prev->prev);
 
-    int has_next  = (it->next) && (it->next->next) && (it->next->next->next);
-    int has_next2 = has_next  && (it->next->next->next->next);
-    int has_prev = (it->prev) && (it->prev->prev);
-
-
-    if (tok_eq(tok,"@pragma")){
-      if (it->next && tok_eq((tok_t*)(it->next->data),"once") ){
-        map_add(included,fnstr,fnstr.data);
-      }else{
-        printerr("syntax")("invalid @pragma.\n");
-        goto crash;
-      }
-      goto gouge;
-
-    }else if (tok_eq(tok,"@define")){
-      if (!it->prev || ((tok_t*)(it->prev->data))->tag != TOK_LPR){
-        printerr("syntax")("invalid @define.\n");
-        goto crash;
-      }
-      if (it->next && it->next->next && it->next->next->next 
-        && ((tok_t*)(it->next->next->next->data))->tag == TOK_RPR 
-      ){
-        str_t name = ((tok_t*)(it->next->data))->val;
-        tok_t* t = (tok_t*)(it->next->next->data);
-        
-        def_t* d = (def_t*) mallocx(sizeof(def_t));
-        d->name = name;
-        d->token = t;
-
-        map_add(defs,name,d);
-
-        goto gouge2;
-      }else if (it->next && it->next->next && ((tok_t*)(it->next->next->data))->tag == TOK_RPR ){
-        str_t name = ((tok_t*)(it->next->data))->val;
-
-        defs_addbool(defs,name.data,tok->lino);
-
-        goto gouge;
-      }else{
-        printerr("syntax")("invalid @define.\n");
-        goto crash;
-      }
-
-    }else if (tok_eq(tok,"@if")){
-      if (!it->prev || !it->next || !it->next->next || !it->next->next->next || ((tok_t*)(it->prev->data))->tag != TOK_LPR ){
-        printerr("syntax")("line %d: invalid @if.\n",tok->lino);
-        goto crash;
-      }
-      int lvl = 1;
-      int n = 4;
-      list_node_t* jt = it->next->next->next;
-      while (jt){
-        tok_t* t = (tok_t*)(jt->data);
-        n++;
-        if (t->tag == TOK_RPR){
-          lvl --;
-          if (lvl == 0){
-            break;
-          }
-        }else if (t->tag == TOK_LPR){
-          lvl ++;
+        if (tok_eq(tok, "@pragma")) {
+            if (it->next && tok_eq((tok_t *)(it->next->data), "once")) {
+                map_add(included, fnstr, fnstr.data);
+            } else {
+                printerr("syntax")("invalid @pragma.\n");
+                goto crash;
+            }
+            goto gouge;
         }
-        jt = jt->next;
-      }
-      if (lvl != 0){
-        printerr("syntax")("line %d: invalid @if (unmatched parenthesis?).\n",tok->lino);
-        goto crash;
-      }
+        else if (tok_eq(tok, "@define")) {
+            if (!it->prev || ((tok_t *)(it->prev->data))->tag != TOK_LPR){
+                printerr("syntax")("invalid @define.\n");
+                goto crash;
+            }
+            if (it->next && it->next->next && it->next->next->next
+                    && ((tok_t *)(it->next->next->next->data))->tag == TOK_RPR
+               ) {
+                str_t name = ((tok_t *)(it->next->data))->val;
+                tok_t *t = (tok_t *)(it->next->next->data);
 
-      tok_t* t0 = (tok_t*)(it->next->data);
-      tok_t* t1 = (tok_t*)(it->next->next->data);
+                def_t *d = (def_t *) mallocx(sizeof(def_t));
+                d->name = name;
+                d->token = t;
 
-      if (t0->tag != TOK_IDT){
-        printerr("syntax")("line %d: first param to @if must be an identifier.\n",tok->lino);
-        goto crash;
-      }
+                map_add(defs, name, d);
 
-      str_t name = t0->val;
-      tok_t* d = def_lookup(name.data,defs);
+                goto gouge2;
+            }
+            else if (it->next && it->next->next && ((tok_t *)(it->next->next->data))->tag == TOK_RPR ){
+                str_t name = ((tok_t *)(it->next->data))->val;
 
-      if (d && tok_eq(d,t1->val.data)){
+                defs_addbool(defs, name.data, tok->lino);
 
-        if (jt -> next){
-          jt->next->prev = jt->prev;
-          jt->prev->next = jt->next;
-        }else{
-          tokens->tail = jt->prev;
-          jt->prev->next = NULL;
+                goto gouge;
+            }
+            else{
+                printerr("syntax")("invalid @define.\n");
+                goto crash;
+            }
         }
-        tokens->len --;
+        else if (tok_eq(tok, "@if")) {
+            if (!it->prev || !it->next || !it->next->next || !it->next->next->next || ((tok_t *)(it->prev->data))->tag != TOK_LPR ){
+                printerr("syntax")("line %d: invalid @if.\n", tok->lino);
+                goto crash;
+            }
+            int lvl = 1;
+            int n = 4;
+            list_node_t *jt = it->next->next->next;
+            while (jt) {
+                tok_t *t = (tok_t *)(jt->data);
+                n++;
+                if (t->tag == TOK_RPR) {
+                    lvl --;
+                    if (lvl == 0) {
+                        break;
+                    }
+                } else if (t->tag == TOK_LPR) {
+                    lvl ++;
+                }
+                jt = jt->next;
+            }
+            if (lvl != 0) {
+                printerr("syntax")("line %d: invalid @if (unmatched parenthesis?).\n", tok->lino);
+                goto crash;
+            }
 
-        goto gouge;
+            tok_t *t0 = (tok_t *)(it->next->data);
+            tok_t *t1 = (tok_t *)(it->next->next->data);
 
-      }else{
+            if (t0->tag != TOK_IDT) {
+                printerr("syntax")("line %d: first param to @if must be an identifier.\n", tok->lino);
+                goto crash;
+            }
 
-        int jn = !!(jt -> next);
+            str_t name = t0->val;
+            tok_t *d = def_lookup(name. data, defs);
 
-        if (!has_prev && !jn){
-          tokens->head = NULL;
-          tokens->tail = NULL;
-          tokens->len = 0;
-          return;
-        }else if (!jn){
-          tokens->tail = it->prev->prev;
-          it->prev->prev->next = NULL;
+            if (d && tok_eq(d,t1->val.data)) {
+                if (jt -> next) {
+                    jt->next->prev = jt->prev;
+                    jt->prev->next = jt->next;
+                } else {
+                    tokens->tail = jt->prev;
+                    jt->prev->next = NULL;
+                }
+                tokens->len --;
 
-        }else if (!has_prev){
-          tokens->head = jt->next;
-          jt->next->prev = NULL;
+                goto gouge;
+            }
+            else {
+                int jn = !!(jt -> next);
 
-        }else{
-          it->prev->prev->next = jt->next;
-          jt->next->prev = it->prev->prev;
+                if (!has_prev && !jn) {
+                    tokens->head = NULL;
+                    tokens->tail = NULL;
+                    tokens->len = 0;
+                    return;
+                }
+                else if (!jn) {
+                    tokens->tail = it->prev->prev;
+                    it->prev->prev->next = NULL;
+
+                }
+                else if (!has_prev) {
+                    tokens->head = jt->next;
+                    jt->next->prev = NULL;
+
+                }
+                else {
+                    it->prev->prev->next = jt->next;
+                    jt->next->prev = it->prev->prev;
+                }
+                tokens->len -= n;
+                it = jt->next;
+                continue;
+            }
         }
-        tokens->len -= n;
-        it = jt->next;
-        continue;
-      }
-    }else if (tok_eq(tok,"@include")){
-      if (!it->prev || !it->next || !it->next->next || ((tok_t*)(it->next->next->data))->tag != TOK_RPR || ((tok_t*)(it->prev->data))->tag != TOK_LPR ){
-        printerr("syntax")("line %d: invalid @include.\n",tok->lino);
-        goto crash;
-      }
-      str_t name = ((tok_t*)(it->next->data))->val;
+        else if (tok_eq(tok, "@include")) {
+            if (!it->prev || !it->next || !it->next->next || ((tok_t *)(it->next->next->data))->tag != TOK_RPR || ((tok_t *)(it->prev->data))->tag != TOK_LPR ){
+                printerr("syntax")("line %d: invalid @include.\n", tok->lino);
+                goto crash;
+            }
+            str_t name = ((tok_t *)(it->next->data))->val;
 
-      int is_std;
-      if (name.data[0] == '"'){
-        name.data[name.len-1]=0;
-        is_std = 0;
-      }else{
-        is_std = 1;
-      }
+            int is_std;
+            if (name.data[0] == '"') {
+                name.data[name.len-1] = 0;
+                is_std = 0;
+            } else {
+                is_std = 1;
+            }
 
-      char* fname;
+            char *fname;
 
-      if (is_std){
-        fname = name.data;
-      }else{
-        fname = (char*)&name.data[1];
-      }
-      
+            if (is_std) {
+                fname = name.data;
+            } else {
+                fname = (char *)&name.data[1];
+            }
 
-      if (!included_lookup(fname,included)){
-        #ifdef printinfo
-          printinfo("[info] preprocessing '%s' included by '%s'.\n",fname,filename);
-        #endif
-        str_t inc;
 
-        if (is_std){
-          inc = str_new();
-          if (str_eq(&name,"math")){
-            str_add(&inc, TEXT_math_wax);
-          }else{
-            printerr("file")("stdlib not found: '%s'.\n",fname);
-            goto crash;
-          }
-        }else{
-          inc = read_file_ascii(fname);
+            if (!included_lookup(fname, included)) {
+#ifdef printinfo
+                printinfo("[info] preprocessing '%s' included by '%s'.\n", fname, filename);
+#endif
+                str_t inc;
+
+                if (is_std) {
+                    inc = str_new();
+                    if (str_eq(&name, "math")) {
+                        str_add(&inc, TEXT_math_wax);
+                    } else {
+                        printerr("file")("stdlib not found: '%s'.\n", fname);
+                        goto crash;
+                    }
+                } else {
+                    inc = read_file_ascii(fname);
+                }
+
+                list_t toks = tokenize(inc);
+                preprocess(fname, &toks, included, defs);
+
+                if (!toks.len) {
+                    if (!is_std) {
+                        name.data[name.len-1] = '"';
+                    }
+                    goto gouge;
+                }
+
+                if (!has_next && !has_prev) {
+                    tokens->head = toks.head;
+                    tokens->tail = toks.tail;
+                    tokens->len = toks.len;
+                    return;
+                }
+                else if (!has_next) {
+                    it->prev->prev->next = toks.head;
+                    tokens->tail = toks.tail;
+                    toks.head->prev = it->prev->prev;
+                }
+                else if (!has_prev) {
+                    tokens->head = toks.head;
+                    it->next->next->next->prev = toks.tail;
+                    toks.tail->next = it->next->next->next;
+                }
+                else {
+                    toks.head->prev = it->prev->prev;
+                    toks.tail->next = it->next->next->next;
+                    it->prev->prev->next = toks.head;
+                    it->next->next->next->prev = toks.tail;
+                }
+
+                tokens->len = tokens->len - 4 + toks.len;
+                it = it->next->next->next;
+
+                if (!is_std) {
+                    name.data[name.len-1]='"';
+                }
+            }
+            else {
+                if (!is_std) {
+                    name.data[name.len-1]='"';
+                }
+                goto gouge;
+            }
+        }
+        else if (tok->val.data[0] == '@') {
+            char *name = (char *)&(tok->val.data[1]);
+            tok_t *d = def_lookup(name, defs);
+            if (!d) {
+                tok_t* t = (tok_t *) mallocx(sizeof(tok_t));
+                t->tag = TOK_INT;
+                t->lino = tok->lino;
+                t->val = str_from("0", 1);
+                it->data = t;
+            } else {
+                it->data = d;
+            }
+            it = it->next;
+            continue;
+        }
+        else {
+            it = it->next;
+            continue;
+        }
+        goto next;
+
+gouge:
+        {
+            if (!has_next && !has_prev) {
+                tokens->head = NULL;
+                tokens->tail = NULL;
+                tokens->len = 0;
+                return;
+            }
+            else if (!has_next) {
+                it->prev->prev->next = NULL;
+                tokens->tail = it->prev->prev;
+
+            }
+            else if (!has_prev) {
+                tokens->head = it->next->next->next;
+                it->next->next->next->prev = NULL;
+
+            }
+            else {
+                it->next->next->next->prev = it->prev->prev;
+                it->prev->prev->next = it->next->next->next;
+            }
+
+            tokens->len -= 4;
+            it = it->next->next->next;
+            goto next;
         }
 
-        list_t toks = tokenize(inc);
-        preprocess(fname, &toks, included, defs);
+gouge2:
+        {
+            if (!has_next2 && !has_prev) {
+                tokens->head = NULL;
+                tokens->tail = NULL;
+                tokens->len = 0;
+                return;
+            }
+            else if (!has_next2) {
+                it->prev->prev->next = NULL;
+                tokens->tail = it->prev->prev;
 
-        if (!toks.len){
-          if (!is_std){
-            name.data[name.len-1]='"';
-          }
-          goto gouge;
+            }
+            else if (!has_prev) {
+                tokens->head = it->next->next->next->next;
+                it->next->next->next->next->prev = NULL;
+
+            }
+            else {
+                it->next->next->next->next->prev = it->prev->prev;
+                it->prev->prev->next = it->next->next->next->next;
+            }
+
+            tokens->len -= 5;
+            it = it->next->next->next->next;
+            goto next;
         }
-
-        if (!has_next && !has_prev){
-          tokens->head = toks.head;
-          tokens->tail = toks.tail;
-          tokens->len = toks.len;
-          return;
-        }else if (!has_next){
-          it->prev->prev->next = toks.head;
-          tokens->tail = toks.tail;
-          toks.head->prev = it->prev->prev;
-        }else if (!has_prev){
-          tokens->head = toks.head;
-          it->next->next->next->prev = toks.tail;
-          toks.tail->next = it->next->next->next;
-        }else{
-          toks.head->prev = it->prev->prev;
-          toks.tail->next = it->next->next->next;
-          it->prev->prev->next = toks.head;
-          it->next->next->next->prev = toks.tail;
-        }
-
-        tokens->len = tokens->len - 4 + toks.len;
-        it = it->next->next->next;
-
-        if (!is_std){
-          name.data[name.len-1]='"';
-        }
-      }else{
-        if (!is_std){
-          name.data[name.len-1]='"';
-        }
-        goto gouge;
-      }
-
-    }else if (tok->val.data[0]=='@'){
-      char* name = (char*)&(tok->val.data[1]);
-      tok_t* d = def_lookup(name,defs);
-      if (!d){
-        tok_t* t = (tok_t*) mallocx(sizeof(tok_t));
-        t->tag = TOK_INT;
-        t->lino = tok->lino;
-        t->val = str_from("0",1);
-        it->data = t;
-      }else{
-        it->data = d;
-      }
-      it = it->next;
-      continue;
-    }else{
-      it = it->next;
-      continue;
+next:
+        {}
     }
-    goto next;
 
-    gouge:
-    {
-      if (!has_next && !has_prev){
-        tokens->head = NULL;
-        tokens->tail = NULL;
-        tokens->len = 0;
-        return;
-      }else if (!has_next){
-        it->prev->prev->next = NULL;
-        tokens->tail = it->prev->prev;
-        
-      }else if (!has_prev){
-        tokens->head = it->next->next->next;
-        it->next->next->next->prev = NULL;
-      
-      }else{
-        it->next->next->next->prev = it->prev->prev;
-        it->prev->prev->next = it->next->next->next;
-      }
+    goto done;
 
-      tokens->len -= 4;
-      it = it->next->next->next;
-      goto next;
-    }
+crash:
+    printf("exiting with preprocessor failure.\n");
+    freex();exit(1);
 
-    gouge2:
-    {
-      if (!has_next2 && !has_prev){
-        tokens->head = NULL;
-        tokens->tail = NULL;
-        tokens->len = 0;
-        return;
-      }else if (!has_next2){
-        it->prev->prev->next = NULL;
-        tokens->tail = it->prev->prev;
-        
-      }else if (!has_prev){
-        tokens->head = it->next->next->next->next;
-        it->next->next->next->next->prev = NULL;
-      
-      }else{
-        it->next->next->next->next->prev = it->prev->prev;
-        it->prev->prev->next = it->next->next->next->next;
-      }
-
-      tokens->len -= 5;
-      it = it->next->next->next->next;
-      goto next;
-    }
-    next:
-    {}
-  }
-
-  goto done;
-
-  crash:
-  printf("exiting with preprocessor failure.\n");
-  freex();exit(1);
-
-  done:
-  return;
+done:
+    return;
 }
 
 
