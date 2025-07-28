@@ -241,32 +241,35 @@ int tok_eq(tok_t* tok, const char* cs){
 }
 
 
-str_t read_file_ascii(const char* filename){
-  char * buffer = 0;
-  long length;
-  size_t sz;
-  FILE * f = fopen (filename, "r");
-  if (f){
-    fseek(f, 0, SEEK_END);
-    length = ftell (f);
-    fseek(f, 0, SEEK_SET);
-    buffer = malloc(length+1);
-    if (buffer){
-      sz = fread(buffer, 1, length, f);
-      if(sz != length) goto failed;
+str_t
+read_file_ascii(const char *filename)
+{
+    FILE *f = fopen(filename, "r");
+    if (f) {
+        fseek(f, 0, SEEK_END);
+        long length = ftell(f);
+        fseek(f, 0, SEEK_SET);
+        char *buffer = malloc(length + 1);
+        if (buffer) {
+            size_t sz = fread(buffer, 1, length, f);
+            if (sz != length) {
+                goto failed;
+            }
+        }
+        fclose(f);
+
+        buffer[length] = 0;
+        str_t s = str_from(buffer, length);
+        free(buffer);
+        return s;
     }
-    fclose(f);
-  
-    buffer[length] = 0;
-    str_t s = str_from(buffer, length);
-    free(buffer);
-    return s;
-  }
+
 failed:
-  printerr("file")("cannot read file %s.\n",filename);
-  printf("exiting with file reading failure.\n");
-  freex();exit(1);
-  return str_from("",0);
+    printerr("file")("cannot read file %s.\n", filename);
+    printf("exiting with file reading failure.\n");
+    freex();
+    exit(1);
+    return str_from("", 0);
 }
 
 
