@@ -7,29 +7,39 @@
 
 map_t *c_functable = NULL;
 
-str_t type_to_c(type_t* typ){
-  str_t out = str_new();
-  if (typ->tag == TYP_INT){
-    str_add(&out,"int");
-  }else if (typ->tag == TYP_FLT){
-    str_add(&out,"float");
-  }else if (typ->tag == TYP_STT){
-    str_add(&out,"struct ");
-    str_add(&out,typ->u.name.data);
-    str_add(&out,"*");
-  }else if (typ->tag == TYP_ARR){
-    str_add(&out,"w_arr_t*");
-  }else if (typ->tag == TYP_VEC){
-    str_add(&out,type_to_c(typ->elem0).data);
-    str_add(&out,"*");
-  }else if (typ->tag == TYP_MAP){
-    str_add(&out,"w_map_t*");
-  }else if (typ->tag == TYP_STR){
-    str_add(&out,"char*");
-  }else{
-    str_add(&out,"/*type?*/");
-  }
-  return out;
+str_t
+type_to_c(type_t *type)
+{
+    str_t out = str_new();
+
+    if (type->tag == TYP_INT) {
+        str_add(&out, "int");
+    }
+    else if (type->tag == TYP_FLT) {
+        str_add(&out, "float");
+    }
+    else if (type->tag == TYP_STT) {
+        str_add(&out, "struct ");
+        str_add(&out, type->u.name.data);
+        str_add(&out, "*");
+    }
+    else if (type->tag == TYP_ARR) {
+        str_add(&out, "w_arr_t*");
+    }
+    else if (type->tag == TYP_VEC) {
+        str_add(&out, type_to_c(type->elem0).data);
+        str_add(&out, "*");
+    }
+    else if (type->tag == TYP_MAP) {
+        str_add(&out, "w_map_t*");
+    }
+    else if (type->tag == TYP_STR) {
+        str_add(&out, "char*");
+    }
+    else {
+        str_add(&out, "/*type?*/");
+    }
+    return out;
 }
 
 
@@ -41,14 +51,15 @@ expr_to_c(expr_t *expr, int indent)
     str_t out = str_new();
     INDENT2(indent);
 
-    if (expr->key == EXPR_LET){
+    if (expr->key == EXPR_LET) {
 
-        str_add(&out,type_to_c( (type_t*)(CHILD2->term) ).data);
-        str_add(&out," ");
-        str_add(&out, ((tok_t*)(CHILD1->term))->val.data);
-        str_add(&out,"=0");
+        str_add(&out, type_to_c( (type_t *)(CHILD2->term) ).data);
+        str_add(&out, " ");
+        str_add(&out,  ((tok_t *)(CHILD1->term))->val.data);
+        str_add(&out, "=0");
 
-    }else if (expr->key == EXPR_SET){
+    }
+    else if (expr->key == EXPR_SET){
         str_add(&out,"(");
         str_add(&out, expr_to_c(CHILD1,-1).data);
         str_add(&out,"=");
