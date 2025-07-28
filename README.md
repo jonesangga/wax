@@ -35,8 +35,8 @@ Newlines and indentations are entirely cosmetic. You can use any type of bracket
 {func main {result int} {print "hello world!"} {return 0}}
 
 {func main [result int] 
-	(print "hello world!") 
-	(return 0)
+    (print "hello world!") 
+    (return 0)
 }
 ```
 
@@ -45,36 +45,36 @@ Here's an in-place quicksort to get a quick taste of the language:
 ```scheme
 ;; sort array in-place for index range [lo,hi] inclusive
 (func qksort_inplace (param A (arr float)) (param lo int) (param hi int)
-	(if (>= lo hi) (then
-		(return)
-	))
-	(let pivot float (get A lo))
-	(let left  int lo)
-	(let right int hi)
-	(while (<= left right) (do
-		(while (< (get A left) pivot) (do
-			(set left (+ left 1))
-		))
-		(while (> (get A right) pivot) (do
-			(set right (- right 1))
-		))
-		(if (<= left right) (then
-			(let tmp float (get A left))
-			(set A left (get A right))
-			(set A right tmp)
-			(set left  (+ left 1))
-			(set right (- right 1))
-		))
-	))
-	(call qksort_inplace A lo right)
-	(call qksort_inplace A left hi)
+    (if (>= lo hi) (then
+        (return)
+    ))
+    (let pivot float (get A lo))
+    (let left  int lo)
+    (let right int hi)
+    (while (<= left right) (do
+        (while (< (get A left) pivot) (do
+            (set left (+ left 1))
+        ))
+        (while (> (get A right) pivot) (do
+            (set right (- right 1))
+        ))
+        (if (<= left right) (then
+            (let tmp float (get A left))
+            (set A left (get A right))
+            (set A right tmp)
+            (set left  (+ left 1))
+            (set right (- right 1))
+        ))
+    ))
+    (call qksort_inplace A lo right)
+    (call qksort_inplace A left hi)
 )
 
 (func qksort (param A (arr float))
-	(if (! (# A)) (then
-		(return)
-	))
-	(call qksort_inplace A 0 (- (# A) 1))
+    (if (! (# A)) (then
+        (return)
+    ))
+    (call qksort_inplace A 0 (- (# A) 1))
 )
 ```
 
