@@ -2,7 +2,7 @@
 #define WAXC
 
 int WVERBOSE = 1;
-#define printinfo if(WVERBOSE)printf
+#define printinfo       if (WVERBOSE) printf
 
 #include "parser.c"
 #include "tac.c"
@@ -10,7 +10,9 @@ int WVERBOSE = 1;
 
 #define TARG_C     1
 
-void print_help(){
+void
+print_help()
+{
     printf(" _____                                           \n");
     printf("|||'  |                                          \n");
     printf("|''   |                                          \n");
@@ -27,22 +29,22 @@ void print_help(){
 }
 
 
-void transpile(int targ, const char* input_file, const char* path, int print_tok, int print_ast){
-
-
+void
+transpile(int targ, const char* input_file, const char* path, int print_tok, int print_ast)
+{
     str_t buf = read_file_ascii(input_file);
     list_t tokens = tokenize(buf);
     map_t included, defs;
     map_clear(&included);
     map_clear(&defs);
 
-    if (targ == TARG_C){
+    if (targ == TARG_C) {
         defs_addbool(&defs,"TARGET_C",0);
     }
 
     printinfo("[info] running preprocessor...\n");
     preprocess(input_file,&tokens,&included,&defs);
-    if (print_tok){
+    if (print_tok) {
         print_tokens(&tokens);
     }
 
@@ -55,7 +57,7 @@ void transpile(int targ, const char* input_file, const char* path, int print_tok
     compile_syntax_tree(tree,&functable,&stttable);
 
 
-    if (print_ast){
+    if (print_ast) {
         print_stttable(&stttable);
         print_functable(&functable);
         print_syntax_tree(tree,0);
@@ -64,7 +66,7 @@ void transpile(int targ, const char* input_file, const char* path, int print_tok
     printinfo("[info] generating target code: %s\n",path);
     str_t modname = base_name(path);
     str_t out;
-    if (targ == TARG_C){
+    if (targ == TARG_C) {
         out = tree_to_c(modname,tree,&functable,&stttable);
     }
     write_file_ascii(path, out.data);
@@ -72,7 +74,9 @@ void transpile(int targ, const char* input_file, const char* path, int print_tok
 }
 
 
-int main(int argc, char** argv){
+int
+main(int argc, char** argv)
+{
     const char* path_c = 0;
     const char* input_file = 0;
 
@@ -80,40 +84,40 @@ int main(int argc, char** argv){
     int print_tok = 0;
 
     int i = 1;
-    while (i < argc){
-        if (!strcmp(argv[i],"--c")){
+    while (i < argc) {
+        if (!strcmp(argv[i],"--c")) {
             path_c = argv[i+1];
             i+=2;
-        }else if (!strcmp(argv[i],"--ast")){
+        } else if (!strcmp(argv[i],"--ast")) {
             print_ast = 1;
             i++;
-        }else if (!strcmp(argv[i],"--tokens")){
+        } else if (!strcmp(argv[i],"--tokens")) {
             print_tok = 1;
             i++;
-        }else if (!strcmp(argv[i],"--silent")){
+        } else if (!strcmp(argv[i],"--silent")) {
             WVERBOSE = 0;
             i++;
-        }else if (!strcmp(argv[i],"--help")){
+        } else if (!strcmp(argv[i],"--help")) {
             print_help();
             exit(0);
-        }else{
-            if (input_file){
+        } else {
+            if (input_file) {
                 printf("[error] cannot parse commandline argument %s.\n",argv[i]);
                 printf("exiting with commandline parsing failure.\n");
                 exit(1);
-            }else{
+            } else {
                 input_file = argv[i];
                 i++;
             }
         }
     }
 
-    if (input_file == 0){
+    if (input_file == 0) {
         printf("[warn] no input file. (try '--help' for usage.)\n");
         exit(0);
     }
 
-    if (path_c){
+    if (path_c) {
         printinfo("[info] transpiling '%s' to C...\n",input_file);
         transpile(TARG_C, input_file, path_c, print_tok, print_ast);
     }
