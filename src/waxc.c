@@ -1,7 +1,7 @@
 #ifndef WAXC
 #define WAXC
 
-int WVERBOSE = 1;
+bool WVERBOSE = true;
 #define printinfo       if (WVERBOSE) printf
 
 #include "parser.c"
@@ -30,11 +30,12 @@ print_help()
 
 
 void
-transpile(int targ, const char *input_file, const char *path, int print_tok, int print_ast)
+transpile(int targ, const char *input_file, const char *path, bool print_tok, bool print_ast)
 {
     str_t buf = read_file_ascii(input_file);
     list_t tokens = tokenize(buf);
-    map_t included, defs;
+    map_t included;
+    map_t defs;
     map_clear(&included);
     map_clear(&defs);
 
@@ -51,7 +52,8 @@ transpile(int targ, const char *input_file, const char *path, int print_tok, int
     printinfo("[info] constructing syntax tree...\n");
     expr_t *tree = syntax_tree(&tokens);
     printinfo("[info] compiling syntax tree...\n");
-    map_t functable, stttable;
+    map_t functable;
+    map_t stttable;
     map_clear(&functable);
     map_clear(&stttable);
     compile_syntax_tree(tree, &functable, &stttable);
@@ -77,11 +79,11 @@ transpile(int targ, const char *input_file, const char *path, int print_tok, int
 int
 main(int argc, char **argv)
 {
-    const char *path_c = 0;
-    const char *input_file = 0;
+    const char *path_c = NULL;
+    const char *input_file = NULL;
 
-    int print_ast = 0;
-    int print_tok = 0;
+    bool print_ast = false;
+    bool print_tok = false;
 
     int i = 1;
     while (i < argc) {
@@ -89,13 +91,13 @@ main(int argc, char **argv)
             path_c = argv[i+1];
             i+=2;
         } else if (!strcmp(argv[i], "--ast")) {
-            print_ast = 1;
+            print_ast = true;
             i++;
         } else if (!strcmp(argv[i], "--tokens")) {
-            print_tok = 1;
+            print_tok = true;
             i++;
         } else if (!strcmp(argv[i], "--silent")) {
-            WVERBOSE = 0;
+            WVERBOSE = false;
             i++;
         } else if (!strcmp(argv[i], "--help")) {
             print_help();
@@ -112,7 +114,7 @@ main(int argc, char **argv)
         }
     }
 
-    if (input_file == 0) {
+    if (input_file == NULL) {
         printf("[warn] no input file. (try '--help' for usage.)\n");
         exit(0);
     }
