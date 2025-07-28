@@ -841,7 +841,7 @@ tree_to_c(str_t modname, expr_t *tree, map_t *functable, map_t *stttable)
                         str_add(&out, type_to_c( (type_t *)(CHILD2->term) ).data);
                         str_add(&out, " ");
                         str_add(&out, ((tok_t *)(CHILD1->term))->val.data);
-                        str_add(&out, "=");
+                        str_add(&out, " = ");
                         str_add(&out, expr_to_c( (expr_t *)(ex1->children.head->next->data), -1).data);
 
                         str_add(&out, ";\n");
