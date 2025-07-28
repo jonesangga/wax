@@ -143,16 +143,18 @@ expr_to_c(expr_t *expr, int indent)
             str_add(&out, "}");
         }
 
-    }else if (expr->key == EXPR_TIF){
+    }
+    else if (expr->key == EXPR_TIF) {
         str_add(&out, "((");
         str_add(&out, expr_to_c(CHILD1,-1).data);
-        str_add(&out, ")?(");
+        str_add(&out, ") ? (");
         str_add(&out, expr_to_c(CHILD2,-1).data);
-        str_add(&out, "):(");
+        str_add(&out, ") : (");
         str_add(&out, expr_to_c(CHILD3,-1).data);
         str_add(&out, "))");
 
-    }else if (expr->key == EXPR_WHILE){
+    }
+    else if (expr->key == EXPR_WHILE) {
         str_add(&out, "while(");
         str_add(&out, expr_to_c(CHILD1,-1).data);
         str_add(&out, "){\n");
