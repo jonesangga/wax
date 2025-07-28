@@ -1,9 +1,6 @@
-
-![wax](assets/wax.svg)
-
 # wax
 
-**wax** is a tiny language designed to transpile to other languages easily. Currently supported backends: **C**, **C++**, **Java**, **TypeScript**, **Python**, **C#**, **Swift**, **Lua**, as well as directly to **WebAssembly**.
+**wax** is a tiny language designed to transpile to C.
 
 ### [Playground](https://waxc.netlify.app/) | [Quickstart](./QUICKSTART.md) | [Examples](./examples) | [IDE](https://github.com/LingDong-/wax4vscode)
 
@@ -100,7 +97,7 @@ There're many more examples, check them out [here](./examples) or on the [online
 
 This repo contains a reference implementation of wax called `waxc`, written from scratch in C99.
 
-- Compiles from wax to C, C++, Java, TypeScript, Python, C#, Swift, Lua and WebAssembly.
+- Compiles from wax to C.
 - It seems pretty fast. Compiling a 700 lines file takes 0.015 seconds on Macbook Pro 2015. Comparison: the output TypeScript, which is also 700 lines long, took `tsc` 1.5 seconds to compile. 
 - Additionally, it can emit a very detailed and low-level syntax tree in JSON format. (If your favourite language is not a supported wax target yet, it's not too hard to go from this file and write a code generator :)
 - It can print the tokenization and the abstract syntax tree to terminal.
@@ -118,14 +115,6 @@ USAGE: waxc [options] code.wax
 
 OPTIONS:                                         
 --c     path/out.c     transpile to c            
---java  path/out.java  transpile to java         
---ts    path/out.ts    transpile to typescript   
---py    path/out.py    transpile to python       
---cs    path/out.cs    transpile to c#           
---cpp   path/out.cpp   transpile to c++          
---swift path/out.swift transpile to swift  
---lua   path/out.lua   transpile to lua 
---wat   path/out.wat   transpile to webassembly         
 --json  path/out.json  syntax tree to JSON file  
 --tokens               print tokenization        
 --ast                  print abstract syntax tree
@@ -148,72 +137,6 @@ gcc fib.c
 ./a.out
 ```
 
-Compile to all targets and compile all outputs with target languages' compilers and run all outputs of target languages' compilers:
-
-```bash
-./waxc examples/fib.wax \
---c fib.c   --java  fib.java  --ts  fib.ts    --py fib.py  --cs  fib.cs  --swift  fib.swift --lua fib.lua;
-gcc fib.c;    javac fib.java;   tsc fib.ts;                  csc fib.cs;   swiftc fib.swift;
-./a.out;      java  fib;       node fib.js; python fib.py;  mono fib.exe;       ./fib;        lua fib.lua;
-```
-
-Compiling to C++ requires flag `-std=c++11`:
-
-```
-./waxc examples/fib.wax --cpp fib.cpp;
-g++ fib.cpp -std=c++11;
-./a.out;
-```
-
-
-### Compiling to WebAssembly
-
-waxc also supports compiling to WebAssembly Text Format (`.wat`). As the output needs to be further transformed to binary (`.wasm`) and wrapped with JS for calling, there's a couple more steps:
-
-**1.** Compile to `wat` with `waxc`:
-
-```bash
-./waxc examples/fib.wax --wat fib.wat
-```
-
-**2.** Compile `wat` to `wasm`, using `wat2wasm` from [wabt](https://github.com/WebAssembly/wabt):
-
-```bash
-./wat2wasm fib.wat
-```
-
-**3.** *Optional:* Optimize with `wasm-opt` from [binaryen](https://github.com/WebAssembly/binaryen) for massive speedups, since (currently) `waxc` is not an optimizing compiler.
-
-```
-./wasm-opt fib.wasm -o fib.O4.wasm -O4
-```
-
-**4.** Now that the `wasm` is ready, you probably need some JS to call it, which basically involves `WebAssembly.instantiate(bytes,imports)` with `console.log` (and `Math` if you used `(@include math)`) as `imports`. Luckily you can find a readymade wrapper in `tools/waxwasmwrap.js`. To use:
-
-Node:
-
-```js
-const wrapper = require("tools/waxwasmwrap.js");
-wrapper("fib.wasm",function(lib){
-  lib.main();
-});
-```
-
-Browser:
-
-```js
-WAXWASMWRAP("fib.wasm",function(lib){
-  lib.main();
-});
-```
-
-All user-defined functions are exported under their original names, so you can call
-
-```js
-lib.fib(42);
-```
-
-and so on.
 
 ### Compiling the Compiler
 
@@ -233,15 +156,6 @@ Alternatively you can run the Makefile:
 
 - `make c`. Compile it.
 - `make co`. Compile it with `-std=c99 -O3 -std=c99 -pedantic -Wall`.
-- `make em`. Compile it with emscripten as a node.js app. (You might need to edit the rule based on how/when/where you installed emscripten.)
-- `make emlib`. Compile it as a javascript library with emscripten, without filesystem dependencies. This is what powers the [online playground](https://waxc.netlify.app/).
-
-
-### [VSCode Extension](https://github.com/LingDong-/wax4vscode)
-
-Syntax Highlighting + Transpile + Compile + Run + Render
-
-[![](https://raw.githubusercontent.com/LingDong-/wax4vscode/main/screenshots/00.png)](https://github.com/LingDong-/wax4vscode)
 
 
 ### Get Started
