@@ -73,7 +73,8 @@ expr_to_c(expr_t *expr, int indent)
 
         str_add(&out, ((tok_t *)(expr->term))->val.data);
 
-    }else if (expr->key == EXPR_IADD || expr->key == EXPR_FADD ||
+    }
+    else if (expr->key == EXPR_IADD || expr->key == EXPR_FADD ||
             expr->key == EXPR_ISUB || expr->key == EXPR_FSUB ||
             expr->key == EXPR_IMUL || expr->key == EXPR_FMUL ||
             expr->key == EXPR_IDIV || expr->key == EXPR_FDIV ||
@@ -88,14 +89,18 @@ expr_to_c(expr_t *expr, int indent)
             expr->key == EXPR_IMOD || 
             expr->key == EXPR_XOR  ||
             expr->key == EXPR_SHL  || expr->key == EXPR_SHR
-            ){
+            ) {
+
         str_add(&out, "(");
-        str_add(&out, expr_to_c(CHILD1,-1).data );
+        str_add(&out, expr_to_c(CHILD1, -1).data);
+        str_add(&out, " ");
         str_add(&out, expr->rawkey.data);
-        str_add(&out, expr_to_c(CHILD2,-1).data );
+        str_add(&out, " ");
+        str_add(&out, expr_to_c(CHILD2, -1).data);
         str_add(&out, ")");
 
-    }else if (expr->key == EXPR_IEQ || expr->key == EXPR_FEQ || expr->key == EXPR_PTREQL){
+    }
+    else if (expr->key == EXPR_IEQ || expr->key == EXPR_FEQ || expr->key == EXPR_PTREQL){
 
         str_add(&out, "(!!("); //silences -Wparentheses-equality
         str_add(&out, expr_to_c(CHILD1,-1).data );
