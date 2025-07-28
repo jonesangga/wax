@@ -56,20 +56,22 @@ expr_to_c(expr_t *expr, int indent)
         str_add(&out, type_to_c( (type_t *)(CHILD2->term) ).data);
         str_add(&out, " ");
         str_add(&out,  ((tok_t *)(CHILD1->term))->val.data);
-        str_add(&out, "=0");
+        str_add(&out, " = 0");
 
     }
     else if (expr->key == EXPR_SET){
-        str_add(&out,"(");
-        str_add(&out, expr_to_c(CHILD1,-1).data);
-        str_add(&out,"=");
 
-        str_add(&out, expr_to_c(CHILD2,-1).data );
-        str_add(&out,")");
+        str_add(&out, "(");
+        str_add(&out, expr_to_c(CHILD1, -1).data);
+        str_add(&out, " = ");
 
-    }else if (expr->key == EXPR_TERM){
+        str_add(&out, expr_to_c(CHILD2, -1).data );
+        str_add(&out, ")");
 
-        str_add(&out, ((tok_t*)(expr->term))->val.data);
+    }
+    else if (expr->key == EXPR_TERM) {
+
+        str_add(&out, ((tok_t *)(expr->term))->val.data);
 
     }else if (expr->key == EXPR_IADD || expr->key == EXPR_FADD ||
             expr->key == EXPR_ISUB || expr->key == EXPR_FSUB ||
