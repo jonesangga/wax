@@ -345,93 +345,107 @@ tok_t* word_to_token(str_t s, int lino){
   return NULL;
 }
 
-#define PUSH_TOKEN \
-  if (buf.len){\
-    tok_t* tok = word_to_token(buf,lino);\
-    if (!tok){\
-      printf("exiting with tokenization failure.\n");\
-      freex();exit(1);\
-    }\
-    list_add(&tokens,tok);\
-    buf = str_new();\
-    isquote = 0;\
-  }
-
-#define ESC_SPECIAL \
-  if (!isquote){\
-    if (buf.len){\
-      PUSH_TOKEN\
-    }\
-  }else{\
-    str_addch(&buf,src.data[i]);\
-  }
-
-list_t tokenize(str_t src){
-  list_t tokens;
-  list_init(&tokens);
-  str_t buf = str_new();
-  int lino = 1;
-  int isquote = 0;
-  int iscomment = 0;
-  for (int i = 0; i < src.len; i++){
-    if (iscomment){
-      if (src.data[i] == '\n'){
-        iscomment = 0;
-      }else{
-        continue;
-      }
+#define PUSH_TOKEN                                              \
+    if (buf.len) {                                              \
+        tok_t *tok = word_to_token(buf, lino);                  \
+        if (!tok) {                                             \
+            printf("exiting with tokenization failure.\n");     \
+            freex();                                            \
+            exit(1);                                            \
+        }                                                       \
+        list_add(&tokens, tok);                                 \
+        buf = str_new();                                        \
+        isquote = false;                                            \
     }
-    if (src.data[i] == '(' || src.data[i] == '[' || src.data[i] == '{'){
-      ESC_SPECIAL
-      if (!isquote){
-        tok_t* tok = tok_alloc(TOK_LPR,lino);
-        tok->val = str_fromch(src.data[i]);
-        list_add(&tokens,tok);
-      }
-    }else if (src.data[i] == ')' || src.data[i] == ']' || src.data[i] == '}'){
-      ESC_SPECIAL
-      if (!isquote){
-        tok_t* tok = tok_alloc(TOK_RPR,lino);
-        tok->val = str_fromch(src.data[i]);
-        list_add(&tokens,tok);
-      }
-    }else if (src.data[i] == '"'){
-      if (i == 0 || src.data[i-1] != '\\'){
-        if (buf.len == 0){
-          isquote = 1;
-          str_addch(&buf,src.data[i]);
-        }else{
-          str_addch(&buf,src.data[i]);
-          PUSH_TOKEN
+
+#define ESC_SPECIAL                     \
+    if (!isquote) {                     \
+        if (buf.len) {                  \
+            PUSH_TOKEN                  \
+        }                               \
+    } else {                            \
+        str_addch(&buf, src.data[i]);   \
+    }
+
+list_t
+tokenize(str_t src)
+{
+    list_t tokens;
+    list_init(&tokens);
+    str_t buf = str_new();
+    int lino = 1;
+    bool isquote = false;
+    bool iscomment = false;
+
+    for (int i = 0; i < src.len; i++) {
+        if (iscomment) {
+            if (src.data[i] == '\n') {
+                iscomment = false;
+            } else {
+                continue;
+            }
         }
-      }else{
-        str_addch(&buf,src.data[i]);
-      }
-    }else if (src.data[i] == '\''){
-      if (!isquote && buf.len == 0){
-        str_addch(&buf,src.data[i++]);
-        if (src.data[i]=='\\')str_addch(&buf,src.data[i++]);
-        if (i < src.len)str_addch(&buf,src.data[i++]);
-        if (i < src.len)str_addch(&buf,src.data[i]);
-        PUSH_TOKEN
-      }else{
-        str_addch(&buf,src.data[i]);
-      }
-    }else if (src.data[i] == ' ' || src.data[i] == '\t'){
-      ESC_SPECIAL
-    }else if (src.data[i] == ';'){
-      if (!isquote){
-        iscomment = 1;
-      }
-      ESC_SPECIAL
-    }else if (src.data[i] == '\n'){
-      ESC_SPECIAL
-      lino++;
-    }else{
-      str_addch(&buf,src.data[i]);
+        if (src.data[i] == '(' || src.data[i] == '[' || src.data[i] == '{') {
+            ESC_SPECIAL
+            if (!isquote) {
+                tok_t *tok = tok_alloc(TOK_LPR, lino);
+                tok->val = str_fromch(src.data[i]);
+                list_add(&tokens, tok);
+            }
+        }
+        else if (src.data[i] == ')' || src.data[i] == ']' || src.data[i] == '}') {
+            ESC_SPECIAL
+            if (!isquote) {
+                tok_t *tok = tok_alloc(TOK_RPR, lino);
+                tok->val = str_fromch(src.data[i]);
+                list_add(&tokens, tok);
+            }
+        }
+        else if (src.data[i] == '"') {
+            if (i == 0 || src.data[i-1] != '\\') {
+                if (buf.len == 0) {
+                    isquote = true;
+                    str_addch(&buf, src.data[i]);
+                } else {
+                    str_addch(&buf, src.data[i]);
+                    PUSH_TOKEN
+                }
+            } else {
+                str_addch(&buf, src.data[i]);
+            }
+        }
+        else if (src.data[i] == '\'') {
+            if (!isquote && buf.len == 0) {
+                str_addch(&buf, src.data[i++]);
+                if (src.data[i] == '\\')
+                    str_addch(&buf, src.data[i++]);
+                if (i < src.len)
+                    str_addch(&buf, src.data[i++]);
+                if (i < src.len)
+                    str_addch(&buf, src.data[i]);
+                PUSH_TOKEN
+            } else {
+                str_addch(&buf,src.data[i]);
+            }
+        }
+        else if (src.data[i] == ' ' || src.data[i] == '\t') {
+            ESC_SPECIAL
+        }
+        else if (src.data[i] == ';') {
+            if (!isquote) {
+                iscomment = true;
+            }
+            ESC_SPECIAL
+        }
+        else if (src.data[i] == '\n') {
+            ESC_SPECIAL
+            lino++;
+        }
+        else {
+            str_addch(&buf, src.data[i]);
+        }
     }
-  }
-  return tokens;
+    return tokens;
 }
 
 void print_tokens(list_t* tokens){
