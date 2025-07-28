@@ -1,11 +1,11 @@
 #ifndef WAX_TO_C
 #define WAX_TO_C
 
-#include "text.c"
-#include "parser.c"
-#include "common.c"
+/* #include "text.c" */
+/* #include "parser.c" */
+/* #include "common.c" */
 
-map_t* c_functable = NULL;
+map_t *c_functable = NULL;
 
 str_t type_to_c(type_t* typ){
   str_t out = str_new();
@@ -789,80 +789,77 @@ str_t expr_to_c(expr_t* expr, int indent){
   return out;
 }
 
-str_t tree_to_c(str_t modname, expr_t* tree, map_t* functable, map_t* stttable){
-  c_functable = functable;
+str_t
+tree_to_c(str_t modname, expr_t *tree, map_t *functable, map_t *stttable)
+{
+    c_functable = functable;
 
-  str_t out = str_new();
-  str_add(&out,"/*****************************************\n * ");
-  str_add(&out,modname.data);
-  for (int i = 0; i < 38-modname.len; i++){
-    str_addch(&out,' ');
-  }
-  str_add(&out,"*\n *****************************************/\n");
-  str_add(&out,"/* Compiled by WAXC (Version ");
-  str_add(&out,__DATE__);
-  str_add(&out,")*/\n\n");
-  str_add(&out,"/*=== WAX Standard Library BEGIN ===*/\n");
-  str_add(&out,TEXT_std_c);
-  str_add(&out,"/*=== WAX Standard Library END   ===*/\n\n");
-  str_add(&out,"/*=== User Code            BEGIN ===*/\n");
-  str_add(&out,"\n");
-  list_node_t* it = tree->children.head;
+    str_t out = str_new();
+    str_add(&out, "/*****************************************\n * ");
+    str_add(&out, modname.data);
+    for (int i = 0; i < 38 - modname.len; i++) {
+        str_addch(&out, ' ');
+    }
+    str_add(&out, "*\n *****************************************/\n");
+    str_add(&out, "/* Compiled by WAXC (Version ");
+    str_add(&out, __DATE__);
+    str_add(&out, ")*/\n\n");
+    str_add(&out, "/*=== WAX Standard Library BEGIN ===*/\n");
+    str_add(&out, TEXT_std_c);
+    str_add(&out, "/*=== WAX Standard Library END   ===*/\n\n");
+    str_add(&out, "/*=== User Code            BEGIN ===*/\n");
+    str_add(&out, "\n");
 
-  while(it){
-    expr_t* expr = (expr_t*)(it->data);
+    list_node_t *it = tree->children.head;
 
-    if (expr->key == EXPR_LET && it->next){
-      expr_t* ex1 = (expr_t*)(it->next->data);
-      if (ex1->key == EXPR_SET){
-        expr_t* ex2 = (expr_t*)(ex1->children.head->data);
+    while (it) {
+        expr_t *expr = (expr_t *)(it->data);
 
-        if (ex2->key == EXPR_TERM){
-          if (str_eq( &((tok_t*)(CHILD1->term))->val, ((tok_t*)(ex2->term))->val.data )){
+        if (expr->key == EXPR_LET && it->next) {
+            expr_t *ex1 = (expr_t *)(it->next->data);
 
+            if (ex1->key == EXPR_SET) {
+                expr_t *ex2 = (expr_t *)(ex1->children.head->data);
 
-            str_add(&out,type_to_c( (type_t*)(CHILD2->term) ).data);
-            str_add(&out," ");
-            str_add(&out, ((tok_t*)(CHILD1->term))->val.data);
-            str_add(&out,"=");
-            str_add(&out,expr_to_c( (expr_t*)(ex1->children.head->next->data),-1).data);
+                if (ex2->key == EXPR_TERM) {
+                    if (str_eq( &((tok_t *)(CHILD1->term))->val, ((tok_t *)(ex2->term))->val.data )) {
+                        str_add(&out, type_to_c( (type_t *)(CHILD2->term) ).data);
+                        str_add(&out, " ");
+                        str_add(&out, ((tok_t *)(CHILD1->term))->val.data);
+                        str_add(&out, "=");
+                        str_add(&out, expr_to_c( (expr_t *)(ex1->children.head->next->data), -1).data);
 
-            str_add(&out,";\n");
-            it = it -> next -> next;
-            continue;
-          }
-          
+                        str_add(&out, ";\n");
+                        it = it->next->next;
+                        continue;
+                    }
+                }
+            }
         }
-      }
+
+        str_add(&out, expr_to_c(expr, 0).data);
+
+        it = it->next;
     }
 
-    str_add(&out,expr_to_c(expr,0).data);
+    str_add(&out,"/*=== User Code            END   ===*/\n");
 
-
-    it = it->next;
-  }
-  str_add(&out,"/*=== User Code            END   ===*/\n");
-
-  str_t mainstr = str_from("main",4);
-  func_t* fun = func_lookup(&mainstr,functable);
-  if (fun != NULL){
-    if (fun->params.len){
-      str_add(&out,"int main(int argc, char** argv){\n");
-      str_add(&out,"  w_arr_t* args = w_arr_new(char*);\n");
-      str_add(&out,"  for (int i = 0; i < argc; i++){\n");
-      str_add(&out,"    w_arr_insert(char*,args,i,argv[i])\n");
-      str_add(&out,"  }\n");
-      str_add(&out,"  int code = main_(args);\n");
-      str_add(&out,"  w_free_arr(args);\n");
-      str_add(&out,"  return code;\n");
-      str_add(&out,"}\n");
+    str_t mainstr = str_from("main", 4);
+    func_t *fun = func_lookup(&mainstr, functable);
+    if (fun != NULL) {
+        if (fun->params.len) {
+            str_add(&out, "int main(int argc, char **argv){\n");
+            str_add(&out, "  w_arr_t* args = w_arr_new(char*);\n");
+            str_add(&out, "  for (int i = 0; i < argc; i++){\n");
+            str_add(&out, "    w_arr_insert(char*,args,i,argv[i])\n");
+            str_add(&out, "  }\n");
+            str_add(&out, "  int code = main_(args);\n");
+            str_add(&out, "  w_free_arr(args);\n");
+            str_add(&out, "  return code;\n");
+            str_add(&out, "}\n");
+        }
     }
-  }
-  return out;
-
+    return out;
 }
-
-
-
 
 #endif
