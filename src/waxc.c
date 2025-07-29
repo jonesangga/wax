@@ -20,17 +20,16 @@ print_help()
     printf("built " __DATE__ "                               \n\n");
     printf("USAGE: waxc [options] code.wax                   \n\n");
     printf("OPTIONS:                                         \n");
-    printf("--c     path/out.c     transpile to c            \n");
-    printf("--json  path/out.json  syntax tree to JSON file  \n");
-    printf("--tokens               print tokenization        \n");
-    printf("--ast                  print abstract syntax tree\n");
-    printf("--silent               don't print info          \n");
-    printf("--help                 print this message        \n");
+    printf("-o      path/out.c     transpile to c            \n");
+    printf("-t                     print tokenization        \n");
+    printf("-a                     print abstract syntax tree\n");
+    printf("-s                     don't print info          \n");
+    printf("-h                     print this message        \n");
 }
 
 
 void
-transpile(int targ, const char *input_file, const char *path, bool print_tok, bool print_ast)
+transpile(int targ, const char *input_file, const char *output_file, bool print_tok, bool print_ast)
 {
     str_t buf = read_file_ascii(input_file);
     list_t tokens = tokenize(buf);
@@ -65,13 +64,13 @@ transpile(int targ, const char *input_file, const char *path, bool print_tok, bo
         print_syntax_tree(tree, 0);
     }
 
-    printinfo("[info] generating target code: %s\n", path);
-    str_t modname = base_name(path);
+    printinfo("[info] generating target code: %s\n", output_file);
+    str_t modname = base_name(output_file);
     str_t out;
     if (targ == TARG_C) {
         out = tree_to_c(modname, tree, &functable, &stttable);
     }
-    write_file_ascii(path, out.data);
+    write_file_ascii(output_file, out.data);
     freex();
 }
 
@@ -79,7 +78,7 @@ transpile(int targ, const char *input_file, const char *path, bool print_tok, bo
 int
 main(int argc, char **argv)
 {
-    const char *path_c = NULL;
+    const char *output_file = NULL;
     const char *input_file = NULL;
 
     bool print_ast = false;
@@ -87,19 +86,19 @@ main(int argc, char **argv)
 
     int i = 1;
     while (i < argc) {
-        if (!strcmp(argv[i], "--c")) {
-            path_c = argv[i+1];
+        if (!strcmp(argv[i], "-o")) { // Output.
+            output_file = argv[i+1];
             i+=2;
-        } else if (!strcmp(argv[i], "--ast")) {
+        } else if (!strcmp(argv[i], "-a")) { // AST.
             print_ast = true;
             i++;
-        } else if (!strcmp(argv[i], "--tokens")) {
+        } else if (!strcmp(argv[i], "-t")) { // Token.
             print_tok = true;
             i++;
-        } else if (!strcmp(argv[i], "--silent")) {
+        } else if (!strcmp(argv[i], "-s")) { // Silent.
             WVERBOSE = false;
             i++;
-        } else if (!strcmp(argv[i], "--help")) {
+        } else if (!strcmp(argv[i], "-h")) { // help.
             print_help();
             exit(0);
         } else {
@@ -115,13 +114,15 @@ main(int argc, char **argv)
     }
 
     if (input_file == NULL) {
-        printf("[warn] no input file. (try '--help' for usage.)\n");
+        printf("[warn] no input file. (try '-h' for usage.)\n");
         exit(0);
     }
 
-    if (path_c) {
+    if (output_file) {
         printinfo("[info] transpiling '%s' to C...\n", input_file);
-        transpile(TARG_C, input_file, path_c, print_tok, print_ast);
+        transpile(TARG_C, input_file, output_file, print_tok, print_ast);
+    } else {
+        printf("[warn] no output file. (try '-h' for usage.)\n");
     }
 
     return 0;
