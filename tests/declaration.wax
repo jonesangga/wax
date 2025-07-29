@@ -1,0 +1,6 @@
+(let a int)
+(let b float)
+
+;; decl with init.
+(let c int 123)
+(let d float 4.56)

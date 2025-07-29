@@ -1,8 +1,14 @@
-waxc: src/waxc.c
-	gcc src/waxc.c -o waxc -O3 -std=c99 -pedantic -Wall -std=c23
+waxc: src/waxc.c src/to_c.c src/common.c
+	gcc src/waxc.c -o waxc -std=c99 -pedantic -Wall -std=c23
+
+.PHONY: test
+test:
+	@cd tests; \
+	bash test.sh ../waxc; \
+	cd ..
 
 c: _
 	gcc -g src/waxc.c -DEBUG -o waxc
 
-text: _
+text:
 	cd tools; python3 concat.py; cd ../

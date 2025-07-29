@@ -817,6 +817,7 @@ tree_to_c(str_t modname, expr_t *tree, map_t *functable, map_t *stttable)
     c_functable = functable;
 
     str_t out = str_new();
+#if 0
     str_add(&out, "/*****************************************\n * ");
     str_add(&out, modname.data);
     for (int i = 0; i < 38 - modname.len; i++) {
@@ -831,6 +832,7 @@ tree_to_c(str_t modname, expr_t *tree, map_t *functable, map_t *stttable)
     str_add(&out, "/*=== WAX Standard Library END   ===*/\n\n");
     str_add(&out, "/*=== User Code            BEGIN ===*/\n");
     str_add(&out, "\n");
+#endif
 
     list_node_t *it = tree->children.head;
 
@@ -864,7 +866,9 @@ tree_to_c(str_t modname, expr_t *tree, map_t *functable, map_t *stttable)
         it = it->next;
     }
 
+#if 0
     str_add(&out,"/*=== User Code            END   ===*/\n");
+#endif
 
     str_t mainstr = str_from("main", 4);
     func_t *fun = func_lookup(&mainstr, functable);
