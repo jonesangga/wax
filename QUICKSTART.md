@@ -45,9 +45,13 @@ An array of 3D vectors:
 
 ```
 
-Variables default to the zero value of their type when an initial value is not specified. `int` and `float` default to `0`. Other types default to null. Null is not a type itself in wax, but nullable objects can be nullified with expression `(null x)`. To check if a variable is NOT null, use `(?? x)` (equivalent to `x!=null` in other languages).
+Variables default to the zero value of their type when an initial value is not specified.
+`int` and `float` default to `0`. Other types default to null.
+Null is not a type itself in wax, but nullable objects can be nullified with expression `(null x)`.
+To check if a variable is NOT null, use `(?? x)` (equivalent to `x!=null` in other languages).
 
-You can also use `local` in place of `let`, to declare variables that get automatically freed when it goes out of scope. See next section for details.
+You can also use `local` in place of `let`, to declare variables that get
+automatically freed when it goes out of scope. See next section for details.
 
 See [Appendix](#appendix) for reserved identifier names.
 
@@ -129,7 +133,11 @@ To free it, use
 (free x)
 ```
 
-**Important:** Freeing the container does not free the individual elements in it if the elements of the array is not a primitive type (`int`/`float`). Simple rule: if you `alloc`'ed something, you need to `free` it yourself. The container is more like a management service that helps you arrange data; it does not take ownership.
+**Important:** Freeing the container does not free the individual elements in it
+if the elements of the array is not a primitive type (`int`/`float`).
+Simple rule: if you `alloc`'ed something, you need to `free` it yourself.
+The container is more like a management service that helps you arrange data;
+it does not take ownership.
 
 
 To allocate something that is automatically freed when it goes out of scope, use the `local` keyword to declare it.
@@ -139,7 +147,9 @@ To allocate something that is automatically freed when it goes out of scope, use
 
 ```
 
-The memory will be freed at the end of the block the variable belongs to, or immediately before any `return` statement. `local` variables cannot be returned or accessed out of its scope.
+The memory will be freed at the end of the block the variable belongs to,
+or immediately before any `return` statement.
+`local` variables cannot be returned or accessed out of its scope.
 
 You can also use a literal to initialize the `vec` or `arr`, by listing the elements in `alloc` expression.
 
@@ -230,15 +240,19 @@ To remove `n` values starting from index `i` from array `x`, use
 (remove x i n)
 ```
 
-To produce a new array that contains a range of values from an array `x`, starting from index `i` and with length `n`, use
+To produce a new array that contains a range of values from an array `x`,
+starting from index `i` and with length `n`, use
 
 ```scheme
 (set y (arr int) (slice x i n))
 ```
 
-Note that if the result of `slice` operation is neither assigned to anything nor returned, it would be a memory leak since `slice` allocates a new array.
+Note that if the result of `slice` operation is neither assigned
+to anything nor returned, it would be a memory leak since `slice` allocates a new array.
 
-These four are the only operations with syntax level support (`#`, `insert` `remove` and `slice` are keywords). Other methods can be implemented as function calls derived from these fundamental operations.
+These four are the only operations with syntax level support
+(`#`, `insert` `remove` and `slice` are keywords).
+Other methods can be implemented as function calls derived from these fundamental operations.
 
 
 ## Maps
@@ -270,7 +284,9 @@ Map key type can be `int` `float` or `str`. Map value type can be anything.
     (let y float)
 )
 ```
-Structs are declared with `struct` keyword. In it, fields are listed with `let` expressions, though initial values cannot be specified (they'll be set to zero values of respective types when the struct gets allocated).
+Structs are declared with `struct` keyword.
+In it, fields are listed with `let` expressions,
+though initial values cannot be specified (they'll be set to zero values of respective types when the struct gets allocated).
 
 Another example: structs used for implementing linked lists might look something like this:
 
@@ -297,7 +313,8 @@ struct node {
 };
 ```
 
-However the notion of "pointers" is hidden in wax; From user's perspective, all non-primitives (`arr`,`vec`,`map`,`str`,`struct`) are manipulated as references.
+However the notion of "pointers" is hidden in wax;
+From user's perspective, all non-primitives (`arr`,`vec`,`map`,`str`,`struct`) are manipulated as references.
 
 ### Instantiating
 
@@ -811,13 +828,6 @@ wax tries to give the generated code an "idiomatic" look & feel by mapping wax t
 |   | int | float | str | vec | arr | map |
 |---|-----|-------|-----|-----|-----|-----|
 | C | `int` | `float` | `char*` | `T*` | `w_arr_t*` (custom impl.) | `w_map_t*` (custom impl.) |
-| Java | `int` | `float` | `String` | `T[]` | `ArrayList<T>` | `HashMap<K,V>` |
-| TypeScript | `number` | `number` | `string` | `Array` | `Array` | `Record<K,V>` |
-| Python | `int` | `float` | `str` | `list` | `list` | `dict` |
-| C# | `int` | `float` | `string` | `T[]` | `List<T>` | `Dictionary<K,V>` |
-| C++ | `int` | `float` | `std::string` | `std::array` | `std::vector` | `std::map` |
-| Swift | `Int` | `Float` | `String?` | `w_Arr<T>?` (wraps `[T]`) | `w_Arr<T>?` (wraps `[T]`) | `w_Map<K,V>?` (wraps `Dictionary`) |
-| Lua | `number` | `number` | `string` | `table` | `table` | `table` |
 
 
 ### Reserved identifier names
