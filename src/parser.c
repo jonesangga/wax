@@ -273,11 +273,13 @@ failed:
 }
 
 
-void write_file_ascii(const char* filename, char* content){
-  FILE *fp;
-  fp = fopen(filename, "w");
-  fputs(content, fp);
-  fclose(fp);
+void
+write_file_ascii(const char *filename, char *content)
+{
+    FILE *fp;
+    fp = fopen(filename, "w");
+    fputs(content, fp);
+    fclose(fp);
 }
 
 
@@ -1337,19 +1339,21 @@ type_t* sym_lookup_local(str_t* s, expr_t* expr){
   return NULL;
 }
 
-func_t* func_lookup(str_t* s, map_t* functable){
-  int k = map_hash(*s);
-  if (functable->slots[k]){
-    list_node_t* it = functable->slots[k]->head;
-    while (it){
-      func_t* func = (func_t*)(it->data);
-      if (str_eq(s,func->name.data)){
-        return func;
-      }
-      it = it->next;
+func_t*
+func_lookup(str_t *s, map_t *functable)
+{
+    int k = map_hash(*s);
+    if (functable->slots[k]){
+        list_node_t *it = functable->slots[k]->head;
+        while (it) {
+            func_t *func = (func_t *)(it->data);
+            if (str_eq(s, func->name.data)){
+                return func;
+            }
+            it = it->next;
+        }
     }
-  }
-  return NULL;
+    return NULL;
 }
 
 type_t* struct_lookup(str_t* s, str_t* fname, map_t* stttable){

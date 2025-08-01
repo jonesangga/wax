@@ -16,10 +16,10 @@
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #endif
 
-typedef struct str_st {
-  int len;
-  int cap;
-  char* data;
+typedef struct {
+    int   len;
+    int   cap;
+    char *data;
 } str_t;
 
 
@@ -121,23 +121,27 @@ void* reallocx(void* oldptr, size_t size){
   return newptr;
 }
 
-str_t str_new(){
-  str_t s;
-  s.cap = 31;
-  s.data = (char*) mallocx((s.cap+1)*sizeof(char));
-  s.data[0] = 0;
-  s.len = 0;
-  return s;
+str_t
+str_new()
+{
+    str_t s;
+    s.cap = 31;
+    s.data = (char *) mallocx((s.cap + 1)*sizeof(char));
+    s.data[0] = 0;
+    s.len = 0;
+    return s;
 }
 
-str_t str_from(const char* cs, int l){
-  str_t s;
-  s.cap = l;
-  s.len = l;
-  s.data = (char*)mallocx(l+1);
-  memcpy(s.data,cs,l);
-  s.data[l] = 0;
-  return s;
+str_t
+str_from(const char *chars, int length)
+{
+    str_t s;
+    s.cap = length;
+    s.len = length;
+    s.data = (char *)mallocx(length + 1);
+    memcpy(s.data, chars, length);
+    s.data[length] = 0;
+    return s;
 }
 
 str_t str_fromch(char c){
@@ -151,16 +155,18 @@ str_t str_fromch(char c){
 }
 
 
-void str_add (str_t* s, const char* cs){
-  size_t l = strlen(cs);
-  if (s->cap < s->len + l){
-    int hs = s->cap/2;
-    s->cap = s->len+MAX(l,hs);
-    s->data = (char*)reallocx(s->data, s->cap+1 );
-  }
-  memcpy(&s->data[s->len],cs, l);
-  s->len += l;
-  s->data[s->len] = 0;
+void
+str_add(str_t *s, const char *chars)
+{
+    size_t l = strlen(chars);
+    if (s->cap < s->len + l) {
+        int hs = s->cap / 2;
+        s->cap = s->len + MAX(l, hs);
+        s->data = (char *)reallocx(s->data, s->cap + 1 );
+    }
+    memcpy(&s->data[s->len], chars, l);
+    s->len += l;
+    s->data[s->len] = 0;
 }
 
 void str_addch (str_t* s, char c){
@@ -320,11 +326,11 @@ str_t str_unquote(str_t src){
 
 struct expr_st *expr_t_nullptr = NULL;
 
-#define CHILD1 ((expr->children.len>0)?((expr_t*)(expr->children.head->data)):expr_t_nullptr)
-#define CHILD2 ((expr->children.len>1)?((expr_t*)(expr->children.head->next->data)):expr_t_nullptr)
-#define CHILD3 ((expr->children.len>2)?((expr_t*)(expr->children.head->next->next->data)):expr_t_nullptr)
-#define CHILD4 ((expr->children.len>3)?((expr_t*)(expr->children.head->next->next->next->data)):expr_t_nullptr)
-#define CHILDN ((expr->children.len>0)?((expr_t*)(expr->children.tail->data)):expr_t_nullptr)
+#define CHILD1      ((expr->children.len > 0) ? ((expr_t *)(expr->children.head->data)) : expr_t_nullptr)
+#define CHILD2      ((expr->children.len > 1) ? ((expr_t *)(expr->children.head->next->data)) : expr_t_nullptr)
+#define CHILD3      ((expr->children.len > 2) ? ((expr_t *)(expr->children.head->next->next->data)) : expr_t_nullptr)
+#define CHILD4      ((expr->children.len > 3) ? ((expr_t *)(expr->children.head->next->next->next->data)) : expr_t_nullptr)
+#define CHILDN      ((expr->children.len > 0) ? ((expr_t *)(expr->children.tail->data)) : expr_t_nullptr)
 
 int tmp_name_cnt = 0;
 str_t tmp_name(char* prefix){

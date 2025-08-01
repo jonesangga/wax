@@ -40,30 +40,35 @@ typedef struct w_arr_st {
   size_t elem_size;
 } w_arr_t;
 
-w_arr_t* w_arr_new_impl(int elem_size){
-  w_arr_t* arr = (w_arr_t*)w_malloc(sizeof(w_arr_t));
-  arr->elem_size = elem_size;
-  arr->len = 0;
-  arr->cap = 16;
-  arr->data = w_malloc((arr->cap)*elem_size);
-  return arr;
+w_arr_t *
+w_arr_new_impl(int elem_size)
+{
+    w_arr_t *arr = (w_arr_t *)w_malloc(sizeof(w_arr_t));
+    arr->elem_size = elem_size;
+    arr->len = 0;
+    arr->cap = 16;
+    arr->data = w_malloc((arr->cap) * elem_size);
+    return arr;
 }
 
-w_arr_t* w_arr_new_ints(int count,...){
-  va_list vals;
-  w_arr_t* arr = (w_arr_t*)w_malloc(sizeof(w_arr_t));
-  arr->elem_size = sizeof(int);
-  arr->len = count;
-  arr->cap = count;
-  arr->data = w_malloc((arr->cap)*arr->elem_size);
+w_arr_t *
+w_arr_new_ints(int count, ...)
+{
+    va_list vals;
+    w_arr_t *arr = (w_arr_t *)w_malloc(sizeof(w_arr_t));
+    arr->elem_size = sizeof(int);
+    arr->len = count;
+    arr->cap = count;
+    arr->data = w_malloc((arr->cap) * arr->elem_size);
 
-  va_start(vals, count);
-  for (int i = 0; i < count; i++) {
-      ((int*)arr->data)[i]=va_arg(vals, int);
-  }
-  va_end(vals);
-  return arr;
+    va_start(vals, count);
+    for (int i = 0; i < count; i++) {
+        ((int *)arr->data)[i] = va_arg(vals, int);
+    }
+    va_end(vals);
+    return arr;
 }
+
 w_arr_t* w_arr_new_flts(int count,...){
   va_list vals;
   w_arr_t* arr = (w_arr_t*)w_malloc(sizeof(w_arr_t));
@@ -352,12 +357,15 @@ char* w_str_cpy(char* x, int i, int l){
   return y;
 }
 
-void w_free_arr(w_arr_t* x){
-  if (x){
-    w_free(x->data);
-    w_free(x);
-  }
+void
+w_free_arr(w_arr_t *x)
+{
+    if (x) {
+        w_free(x->data);
+        w_free(x);
+    }
 }
+
 void w_free_map(w_map_t* map){
   if (!map){
     return;
