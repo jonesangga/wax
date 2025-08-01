@@ -4,3 +4,5 @@
 ;; decl with init.
 (let c int 123)
 (let d float 4.56)
+
+(let x (arr float))

@@ -1,4 +1,4 @@
-waxc: src/waxc.c src/to_c.c src/common.c
+waxc: src/waxc.c src/to_c.c src/common.c src/std/std.c
 	gcc src/waxc.c -o waxc -std=c99 -pedantic -Wall -std=c23
 
 .PHONY: test
